@@ -1,0 +1,15 @@
+{
+  "name": "restrict-ip-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "restrictIp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@silvermine/serverless-plugin-cloudfront-lambda-edge": "github:silvermine/serverless-plugin-cloudfront-lambda-edge",
+    "serverless-iam-roles-per-function": "^1.0.4"
+  }
+}

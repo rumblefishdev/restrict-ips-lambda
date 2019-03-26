@@ -1,0 +1,79 @@
+service: restrict-ip-lambda
+provider:
+  name: aws
+  region: us-east-1
+  runtime: nodejs8.10
+  stage: dev
+
+package:
+  individually: true
+
+plugins:
+  - serverless-iam-roles-per-function
+  - "@silvermine/serverless-plugin-cloudfront-lambda-edge"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  config: ${file(./config.${self:custom.stage}.yml)}
+
+
+functions:
+  restrictIp:
+    handler: restrictIp.handler
+    package:
+      exclude:
+        - ./**
+      include:
+        - restrictIp.js
+    iamRoleStatements:
+    -
+      Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource:
+        Fn::Join:
+          - ""
+          -
+            - "arn:aws:ssm"
+            - ":"
+            -
+              Ref: AWS::Region
+            - ":"
+            -
+              Ref: AWS::AccountId
+            - ":parameter/"
+            -
+              Ref: RestricFlagParam
+    -
+      Effect: Allow
+      Action:
+        - dynamodb:GetItem
+      Resource:
+        - Fn::GetAtt: [RestrictIpTable, Arn]
+
+
+resources:
+  Resources:
+    RestricFlagParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: ${self:custom.config.RestrictFlagPath}
+        Description: 'Restrict flag to bypass filter by restricted customers'
+        Type: String
+        Value: ${self:custom.config.RestrictFlagPhrase}
+
+    RestrictIpTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: ip
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: ip
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 15
+          WriteCapacityUnits: 1
+        TableName: restrict-ip-table
