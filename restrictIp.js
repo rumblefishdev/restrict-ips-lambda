@@ -7,7 +7,6 @@ const dynamodb = new AWS.DynamoDB()
 
 exports.handler = (event, context, callback) => {
   const request = event.Records[0].cf.request
-  const uri = request.uri
   checkIpTable(request, callback)
 }
 
