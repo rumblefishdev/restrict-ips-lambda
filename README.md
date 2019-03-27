@@ -378,7 +378,7 @@ modified as following:
 
 
 This has an effect of returning to the client the content of `restricted.html`
-file instead of the path was requested. We've made this page to present the
+file instead of the path that was requested. We've made this page to present the
 information about restrictions to the user.
 
 
