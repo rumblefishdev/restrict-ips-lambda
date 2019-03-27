@@ -301,6 +301,13 @@ it's services.
 
     exports.handler = (event, context, callback) => {
       const request = event.Records[0].cf.request
+      const uri = request.uri
+      if (uri.match(/\./) && !uri.match(/index\.html$/)) {
+        // Only filter requests for html content.
+        // Pass through all the queries for media files (css, images, js, etc)
+        callback(null, request)
+        return
+      }
       checkIpTable(request, callback)
     }
 
@@ -391,6 +398,19 @@ run it in edge location. You should look for a Log Group named
 `/aws/lambda/us-east-1.restrict-ip-lambda-dev-restrictIp` in a region
 geographically closest to you.
 
+
+## Check that restriction mechanism works
+
+Now you can add your own IP to the list of blocked IPs and check that the
+mechanism works as expected. You can do this from command line using:
+
+    curl https://ipecho.net/plain | python3 import_ips_from_csv.py -
+
+Now make a request to your distribution. It shold render the content of
+`restricted.html` file (provided you've create one) or 503, if you haven't.
+
+Now add `?ipr=canIGetInPlease` at the end of your URL. You should see
+the original content again.
 
 # Summary
 

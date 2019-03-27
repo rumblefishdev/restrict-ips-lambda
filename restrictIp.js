@@ -7,6 +7,13 @@ const dynamodb = new AWS.DynamoDB({ region: 'us-east-1' })
 
 exports.handler = (event, context, callback) => {
   const request = event.Records[0].cf.request
+  const uri = request.uri
+  if (uri.match(/\./) && !uri.match(/index\.html$/)) {
+    // Only filter requests for html content.
+    // Pass through all the queries for media files (css, images, js, etc)
+    callback(null, request)
+    return
+  }
   checkIpTable(request, callback)
 }
 

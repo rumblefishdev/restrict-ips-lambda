@@ -1,4 +1,5 @@
 import argparse
+import sys
 from functools import reduce
 
 import boto3
@@ -20,7 +21,10 @@ def import_csv_to_dynamodb(table_name, csv_file_name):
     session = boto3.session.Session()
     dynamodb = session.resource('dynamodb')
     dynamodb_table = dynamodb.Table(table_name)
-    csv_file = open(csv_file_name, 'r')
+    if csv_file_name == '-':
+        csv_file = sys.stdin
+    else:
+        csv_file = open(csv_file_name, 'r')
 
     with dynamodb_table.batch_writer() as batch:
         for no, cur_line in enumerate(csv_file):
