@@ -20,6 +20,8 @@ custom:
 functions:
   restrictIp:
     handler: restrictIp.handler
+    memorySize: 128
+    timeout: 1
     package:
       exclude:
         - ./**
