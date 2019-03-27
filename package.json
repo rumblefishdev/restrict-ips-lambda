@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@silvermine/serverless-plugin-cloudfront-lambda-edge": "github:silvermine/serverless-plugin-cloudfront-lambda-edge"
+    "@silvermine/serverless-plugin-cloudfront-lambda-edge": "github:silvermine/serverless-plugin-cloudfront-lambda-edge",
+    "serverless": "^1.39.1"
   }
 }

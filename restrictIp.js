@@ -2,8 +2,8 @@
 
 const QS = require('querystring')
 const AWS = require('aws-sdk')
-const ssm = new AWS.SSM()
-const dynamodb = new AWS.DynamoDB()
+const ssm = new AWS.SSM({ region: 'us-east-1' })
+const dynamodb = new AWS.DynamoDB({ region: 'us-east-1' })
 
 exports.handler = (event, context, callback) => {
   const request = event.Records[0].cf.request
@@ -36,7 +36,8 @@ async function checkIpTable(request, callback) {
 async function checkRestrictFlag(request, callback) {
   const params = QS.parse(request.querystring)
   if (!params.ipr) {
-    return restrictedResponse(request, callback)
+    restrictedResponse(request, callback)
+    return
   }
   const ssmParams = { Name: '/develop/shared/restrict_flag', WithDecryption: true }
   let data
@@ -45,6 +46,7 @@ async function checkRestrictFlag(request, callback) {
   } catch (err) {
     console.error(err)
     restrictedResponse(request, callback)
+    return
   }
   if (data.Parameter.Value !== params.ipr) {
     restrictedResponse(request, callback)
