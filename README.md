@@ -1,20 +1,20 @@
 # Custom geo restriction of AWS Cloud Front Distribution using Lambda@Edge
 
-A while ago one of our clients came to us with question if it’ s
+A while ago one of our clients inquired whether it was
 possible to block access to their web application for users from
 a certain US state. A typical infrastructure of the application
-we create at Rumble Fish involves Cloud Front distribution, which
+we create at Rumble Fish involves CloudFront distribution, which
 serves compiled frontend files, usually built in React.
 
-Cloud Front offers geo restriction out of box, however, for some
+CloudFront offers geo restriction out of the box, however, for some
 reason it only allows to filter traffic based on country, which was
-way too broad in the case at hand. In this article I would like
+way too broad in the case at hand. In this article, I would like
 to present our tiny solution for that request. Our approach leverages
 Lambda@Edge to facilitate traffic filtering. To determine if the user
-connects from the US state that we want to filter out we used publicly
+connects from the US state that we want to filter out, we used publicly
 available list of IP ranges used by ISPs from that state. We’ve stored
 these ranges in DynamoDB and check upon request if client’s IP matches
-the filter. If it does the users gets redirected to a page explaining
+the filter. If it does, the users gets redirected to a page explaining
 the geo restriction policies of our site. But first let’s start with
 the basics.
 
@@ -38,7 +38,7 @@ responses at the following points:
 
 
 In our scenario of geo restriction we would like to check IP address of the
-client and compare with list of restricted address. So “viewer request” event
+client and compare with the list of restricted address. So “viewer request” event
 is the best choice.
 
 # Implementing Lambda@Edge function in Serverless framework
@@ -57,7 +57,7 @@ your AWS account you can follow simple steps:
 
 The stack deploys a Lambda@Edge function in us-east-1 region.
 
-In order to make the CloudFront distribution use it, modify your Cloud Formation
+In order to make the CloudFront distribution use it, modify your CloudFormation
 template with the following:
 
     CloudFront:
@@ -72,7 +72,7 @@ template with the following:
 
 
 Please note that the following import will only work if your CloudFront
-distribution is also in us-east-1. If you're usually using different AWS region
+distribution is also in us-east-1. If you usually use different AWS region,
 you will have to type in the ARN of LambdaVersion directly to your
 template. Remember that Lambda@Edge functions are required to be deployed in
 `us-east-1` region, because this region is where all other region replicate from.
@@ -81,7 +81,7 @@ template. Remember that Lambda@Edge functions are required to be deployed in
 
 In our case we have quite few IP address ranges we would like to restrict access
 to. We've downloaded the ranges for the US state we needed to block from public lists.
-Since we want our restriction mechanism to inflict minimal delay we've found out
+Since we want our restriction mechanism to inflict minimal delay, we've found out
 that it's best choice to convert all the ranges to the list of IP addreeses.
 
 This way the database query which happens on request time only needs to check
@@ -134,8 +134,8 @@ region so we hardcode this value in the file.
 Also it's worth to explain what
 `@silvermine/serverless-plugin-cloudfront-lambda-edge` is for. It's responsible
 for configuring the function priviledges to work with Lambda@Edge.
-It's adding `"lambdaedge.aws.com"` as Principal of the AWS::Iam::Role created by
-the framework and it's allowing this role to replicate the function to Edge
+It adds `"lambdaedge.aws.com"` as Principal of the AWS::Iam::Role created by
+the framework and allows this role to replicate the function to Edge
 locations.
 
 ### Custom priviledges of Lambda@Edge function
@@ -175,7 +175,7 @@ First one allows it to read a secret settings that when passed in query string
 bypasses the restriction mechanism. The initial value of this parameter is set
 in `config.dev.yml` file.
 
-Second priveledges grants our lambda function read access from the DynamoDB
+Second of the privileges grants our lambda function read access from the DynamoDB
 table in which we store the restricted IP addresses.
 
 ### Custom settings
@@ -224,7 +224,7 @@ Below we can find this block:
 
 
 This part defines the only lambda function defined by the app. It specifies that
-it's implementation is to be used in `handler` variable exported from
+its implementation is to be used in `handler` variable exported from
 `restrictIp.js` file. The `memorySize` and `timeout` settings are mandatory for
 Lambda@Edge functions.
 
@@ -289,11 +289,11 @@ Starting from the top we have these:
     const dynamodb = new AWS.DynamoDB({ region: 'us-east-1' })
 
 
-Our service uses SSM and DynamoDB services. At first site a careful reader may
+Our service uses SSM and DynamoDB services. At first sight a careful reader may
 wonder why we need to specify `{ region: 'us-east-1' }` in service
-configuration. This is specific to the fact that we are dealing with Lambda@Edge
+configuration. This is due to the fact that we are dealing with Lambda@Edge
 function which gets replicated to Edge location. When our distribution receives
-request from other location it needs to know from which region it should request
+request from other location, it needs to know from which region it should request
 it's services.
 
 
@@ -338,7 +338,7 @@ The `handler` function is our entry point defined in `serverless.yml`. This
 function converts the IP address of the client to 32-bit integer and looks up
 the DynamoDB table.
 
-If entry is found it calls to `checkRestrictFlag` that looks as follows:
+If entry is found, it calls to `checkRestrictFlag` that looks as follows:
 
 
     async function checkRestrictFlag(request, callback) {
@@ -363,12 +363,12 @@ If entry is found it calls to `checkRestrictFlag` that looks as follows:
 
 This function checks the query string and compares the value of `ipr` parameter
 to the value stored in Paramater Store. If the value matches the filter
-mechanism lets the user through and blocks him otherwise.
+mechanism lets the user through and blocks them otherwise.
 
 ### Restriction mechanism
 
-In case the user gets restricted it has at effect of applying the following
-modification to the request made to origin:
+When access for the user should be restricted, request to the origin will be
+modified as following:
 
 
     function restrictedResponse(request, callback) {
@@ -378,7 +378,7 @@ modification to the request made to origin:
 
 
 This has an effect of returning to the client the content of `restricted.html`
-file instead of the path the he requested. We've made this page to present the
+file instead of the path was requested. We've made this page to present the
 information about restrictions to the user.
 
 
@@ -386,14 +386,14 @@ information about restrictions to the user.
 
 Ok, so now that we have function deployed and we've explained how it's build,
 let's see how we can debug it. Assuming you've followed all the steps the
-function is attached to a Cloud Front distribution.
+function is attached to a CloudFront distribution.
 
-Every time it gets requested you will see some log output in Cloud Watch. The
+Every time it gets requested you will see some log output in CloudWatch. The
 function will run in the Edge location specific to the place from which you make
 the request. For requests done from central Europe the requests get served from
 `eu-central-1` region.
 
-Cloud Front will automatically replicate our function between the regions and
+CloudFront will automatically replicate our function between the regions and
 run it in edge location. You should look for a Log Group named
 `/aws/lambda/us-east-1.restrict-ip-lambda-dev-restrictIp` in a region
 geographically closest to you.
