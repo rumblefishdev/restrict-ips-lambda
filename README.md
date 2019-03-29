@@ -82,7 +82,7 @@ template. Remember that Lambda@Edge functions are required to be deployed in
 In our case we have quite few IP address ranges we would like to restrict access
 to. We've downloaded the ranges for the US state we needed to block from public lists.
 Since we want our restriction mechanism to inflict minimal delay, we've found out
-that it's best choice to convert all the ranges to the list of IP addreeses.
+that it's best choice to convert all the ranges to the list of IP addresses.
 
 This way the database query which happens on request time only needs to check
 single index to determine if address is blocked, as opposed to checking 2
